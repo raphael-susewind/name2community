@@ -1,7 +1,7 @@
 #!/usr/bin/perl -CSDA
 #
 # guesscommunity.pl
-# Copyright 2014 Raphael Susewind <mail@raphael-susewind.de>
+# Copyright 2012 Raphael Susewind <mail@raphael-susewind.de>
 # http://www.raphael-susewind.de
 #
 # This program is free software; you can redistribute it and/or modify
@@ -18,6 +18,9 @@
 # along with this program; if not, write to the Free Software
 # Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 #
+
+# YOU NEED TO ADJUST THIS!
+my $ngramcommand="/home/raphael/bin/srilm/bin/i686/ngram";
 
 # 
 # Preparatory stuff
@@ -467,5 +470,45 @@ if ($jaga>0) {
 	print "$community with certainty index of ".$communitylist{$community}."\%\n";
     }
 } else {
-    print "Best bet: Unknown\n"
+    if ($fullname =~/\p{Latin}/) {$fullname=hindi($fullname)}
+    if ($fullname =~/\P{Devanagari}/) {print "Best bet: Unknown (n-gram would require latin or devanagari input)"}
+    open (FILE, ">ngramtmp");
+    $fullname =~ s/(\P{Mark})/ $1/g; 
+    $fullname =~ s/^ //;
+    print FILE $fullname."\n";
+    close (FILE);
+    undef (my %list);
+    $return = `$ngramcommand -order 3 -lm ngram-hindu-lm -ppl ngramtmp 2>/dev/null`;
+    print $return;
+    $return =~ /logprob= (-*\d*\.*\d+)/gs;
+    $list{'Hindu'} = $1;
+    $return = `$ngramcommand -order 3 -lm ngram-muslim-lm -ppl ngramtmp 2>/dev/null`;
+    $return =~ /logprob= (-*\d*\.*\d+)/gs;
+    $list{'Muslim'} = $1;
+    $return = `$ngramcommand -order 3 -lm ngram-christian-lm -ppl ngramtmp 2>/dev/null`;
+    $return =~ /logprob= (-*\d*\.*\d+)/gs;
+    $list{'Christian'} = $1;
+    $return = `$ngramcommand -order 3 -lm ngram-sikh-lm -ppl ngramtmp 2>/dev/null`;
+    $return =~ /logprob= (-*\d*\.*\d+)/gs;
+    $list{'Sikh'} = $1;
+    $return = `$ngramcommand -order 3 -lm ngram-buddhist-lm -ppl ngramtmp 2>/dev/null`;
+    $return =~ /logprob= (-*\d*\.*\d+)/gs;
+    $list{'Buddhist'} = $1;
+    $return = `$ngramcommand -order 3 -lm ngram-jain-lm -ppl ngramtmp 2>/dev/null`;
+    $return =~ /logprob= (-*\d*\.*\d+)/gs;
+    $list{'Jain'} = $1;
+    $return = `$ngramcommand -order 3 -lm ngram-parsi-lm -ppl ngramtmp 2>/dev/null`;
+    $return =~ /logprob= (-*\d*\.*\d+)/gs;
+    $list{'Parsi'} = $1;
+    system("rm -f ngramtmp");
+    my @sorted = sort {$list{$b} <=> $list{$a}} (keys(%list));
+    if ($list{$sorted[0]}-$list{$sorted[1]} > 0.75) {
+	print "Best bet: ".$sorted[0]." with log probability difference to second best bet of ".($list{$sorted[0]}-$list{$sorted[1]})."\n";
+	foreach my $community (@sorted) {
+	    print "$community with log probability of ".$list{$community}."\n";
+	}
+    } else {
+        print "Best bet: Unknown (even with n-gram logic)\n";
+    }
 }
+

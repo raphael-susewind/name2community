@@ -1,5 +1,5 @@
 # name2community
-Probabilistic inference of religious community from South Asian names: http://dx.doi.org/10.5281/zenodo.45360
+Probabilistic inference of religious community from South Asian names: http://dx.doi.org/10.5281/zenodo.45362
 
 This software is a sample implementation (under a GNU Affero General Public license; see LICENSE) of an algorithm that infers likely religious community from South Asian names:
 

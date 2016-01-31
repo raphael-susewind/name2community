@@ -1,7 +1,7 @@
 #!/usr/bin/perl -CSDA
 #
 # createnamedb.pl
-# Copyright 2014 Raphael Susewind <mail@raphael-susewind.de>
+# Copyright 2012 Raphael Susewind <mail@raphael-susewind.de>
 # http://www.raphael-susewind.de
 #
 # This program is free software; you can redistribute it and/or modify
